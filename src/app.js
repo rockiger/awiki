@@ -107,7 +107,11 @@ function onClickLabel(ev) {
   const filePath = ev.target.dataset.path.endsWith(ext) ? ev.target.dataset.path : ev.target.dataset.path + ext;
   console.log(jetpack.read(basePath + filePath)); // TODO path with 
   //const editor = document.querySelector("#main > x-textarea");
-  editor.setMarkdown(jetpack.read(basePath + filePath));
+  let md = jetpack.read(basePath + filePath);
+  // TODO add absolute urls to links local links
+  // TODO add absolute urls to local files
+  editor.setMarkdown(md);
+  // TODO add eventHandlers to links
   ev.stopPropagation();
   return false;
 }
