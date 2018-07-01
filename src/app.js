@@ -14,6 +14,9 @@ import "./helpers/external_links.js";
 import jetpack from "fs-jetpack";
 import env from "env";
 
+
+import Editor from "tui-editor";
+
 const basePath = "/home/macco/mega/md/"
 const ext = ".markdown";
 
@@ -29,6 +32,14 @@ document.querySelector("#app").style.display = "flex";
 for (const label of labels) {
   label.addEventListener('click', onClickLabel)
 }
+
+var editor = new Editor({
+  el: document.querySelector('#editor'),
+  initialEditType: 'wysiwyg',
+  previewStyle: 'vertical',
+  height: '100%',
+  language: 'de_DE'
+});
 
 /*************
  * Functions *
@@ -95,8 +106,8 @@ function accordion(el, expanded="expanded") {
 function onClickLabel(ev) {
   const filePath = ev.target.dataset.path.endsWith(ext) ? ev.target.dataset.path : ev.target.dataset.path + ext;
   console.log(jetpack.read(basePath + filePath)); // TODO path with 
-  const editor = document.querySelector("#main > x-textarea");
-  editor.value = jetpack.read(basePath + filePath);
+  //const editor = document.querySelector("#main > x-textarea");
+  editor.setMarkdown(jetpack.read(basePath + filePath));
   ev.stopPropagation();
   return false;
 }

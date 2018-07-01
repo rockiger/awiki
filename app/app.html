@@ -4,6 +4,10 @@
   <meta charset="utf-8">
   <title>Electron Boilerplate</title>
   <link rel="stylesheet" href="../node_modules/xel/themes/vanilla.css">
+  <link rel="stylesheet" href="../node_modules/codemirror/lib/codemirror.css">
+  <link rel="stylesheet" href="../node_modules/tui-editor/dist/tui-editor.css">
+  <link rel="stylesheet" href="../node_modules/tui-editor/dist/tui-editor-contents.css">
+  <link rel="stylesheet" href="../node_modules/highlight.js/styles/github.css">
   <script src="../node_modules/xel/xel.min.js"></script>
 </head>
 <body>
@@ -14,8 +18,7 @@
       </nav>
     </div>
     <div id="main">
-      <x-textarea>
-      </x-textarea>
+      <div id="editor"></div>
     </div>
   </div>
   <script src="app.js"></script>
