@@ -18,7 +18,7 @@ import env from "env";
 
 import Editor from "tui-editor";
 
-const basePath = "/home/macco/mega/md/"
+const basePath = "/home/macco/mega/md/";
 const ext = ".markdown";
 
 let tree = jetpack.inspectTree(basePath, {relativePath: true}).children;
@@ -41,6 +41,8 @@ var editor = new Editor({
   height: '100%',
   language: 'de_DE'
 });
+
+window.editor = editor;
 
 /*************
  * Functions *
@@ -109,11 +111,11 @@ function onClickLabel(ev) {
   const dirPath = path.dirname(filePath); // TODO path with 
   //const editor = document.querySelector("#main > x-textarea");
   let md = jetpack.read(path.join(basePath + filePath));
-  md = relToAbsPaths(md, dirPath);
+  md = relToAbsPaths(md, basePath + dirPath);
   // TODO add absolute urls to links local links
-  // TODO add absolute urls to local files
-  // console.log(md)
   editor.setMarkdown(md);
+  editor.moveCursorToStart();
+  editor.focus();
   // TODO add eventHandlers to links
   ev.stopPropagation();
   return false;
@@ -121,9 +123,8 @@ function onClickLabel(ev) {
 
 function relToAbsPaths(mdString, dirPath) {
   const replacement = '(' + dirPath + '/';
-  console.log(replacement); 
-  console.log(mdString.match(/\]\(\.\//gim));
-  const newString = mdString.replace(/\(\.\//gim, replacement);
-  // console.log(newString);
+  console.log(mdString.search(/\]\(\.\//gm));
+  const newString = mdString.replace(/\(\.\//gm, replacement);
+  console.log(replacement);
   return newString;
 }
