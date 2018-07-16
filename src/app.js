@@ -12,6 +12,7 @@ import "./helpers/external_links.js";
  * Setup *
  *********/
 import jetpack from "fs-jetpack";
+import path from "path";
 import env from "env";
 
 
@@ -105,13 +106,24 @@ function accordion(el, expanded="expanded") {
 
 function onClickLabel(ev) {
   const filePath = ev.target.dataset.path.endsWith(ext) ? ev.target.dataset.path : ev.target.dataset.path + ext;
-  console.log(jetpack.read(basePath + filePath)); // TODO path with 
+  const dirPath = path.dirname(filePath); // TODO path with 
   //const editor = document.querySelector("#main > x-textarea");
-  let md = jetpack.read(basePath + filePath);
+  let md = jetpack.read(path.join(basePath + filePath));
+  md = relToAbsPaths(md, dirPath);
   // TODO add absolute urls to links local links
   // TODO add absolute urls to local files
+  // console.log(md)
   editor.setMarkdown(md);
   // TODO add eventHandlers to links
   ev.stopPropagation();
   return false;
+}
+
+function relToAbsPaths(mdString, dirPath) {
+  const replacement = '(' + dirPath + '/';
+  console.log(replacement); 
+  console.log(mdString.match(/\]\(\.\//gim));
+  const newString = mdString.replace(/\(\.\//gim, replacement);
+  // console.log(newString);
+  return newString;
 }
