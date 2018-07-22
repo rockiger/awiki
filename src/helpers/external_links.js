@@ -37,4 +37,4 @@ const supportExternalLinks = event => {
   checkDomElement(event.target);
 };
 
-document.addEventListener("click", supportExternalLinks, false);
+// document.addEventListener("click", supportExternalLinks, false);

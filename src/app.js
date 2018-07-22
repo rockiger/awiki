@@ -13,15 +13,15 @@ import "./helpers/external_links.js";
  *********/
 import jetpack from "fs-jetpack";
 import path from "path";
-import env from "env";
+const shell = require('electron').shell;
 
 
 import Editor from "tui-editor";
 
-const basePath = "/home/macco/mega/md/";
-const ext = ".markdown";
+const BASEPATH = "/home/macco/mega/md/";
+const EXT = ".markdown";
 
-let tree = jetpack.inspectTree(basePath, {relativePath: true}).children;
+let tree = jetpack.inspectTree(BASEPATH, {relativePath: true}).children;
 let sidebar = createSidebar(tree);
 
 const nav = document.querySelector("#nav");
@@ -56,9 +56,9 @@ function createSidebar(tree) {
 
   const first = tree[0]; 
   const rest = tree.slice(1);
-  const isTxt = first.name.endsWith(ext);
+  const isTxt = first.name.endsWith(EXT);
   const isDir = (first.type === "dir") ? true : false;
-  const name = isDir ? first.name : first.name.slice(0,-ext.length);
+  const name = isDir ? first.name : first.name.slice(0,-EXT.length);
   if ( isDir && hasFile(name, rest) && hasChild(first)) {
     return accordion(first) + createSidebar(rest.slice(1)); //
   } else if (isTxt) {
@@ -73,7 +73,7 @@ function hasFile(name, list) {
   console.log(list)
   for (const e of list) {
     console.log(e.name);
-    if (name + ext === e.name) {
+    if (name + EXT === e.name) {
       return true;
     }
   }
@@ -82,7 +82,7 @@ function hasFile(name, list) {
 
 function hasChild(el) {
   for (const child of el.children) {
-    if (child.name.endsWith(ext)) {
+    if (child.name.endsWith(EXT)) {
       return true;
     }
   }
@@ -105,26 +105,45 @@ function accordion(el, expanded="expanded") {
 </x-accordion>`
 }
 
-
-function onClickLabel(ev) {
-  const filePath = ev.target.dataset.path.endsWith(ext) ? ev.target.dataset.path : ev.target.dataset.path + ext;
-  const dirPath = path.dirname(filePath); // TODO path with 
-  //const editor = document.querySelector("#main > x-textarea");
-  let md = jetpack.read(path.join(basePath + filePath));
-  md = relToAbsPaths(md, basePath + dirPath);
-  // TODO add absolute urls to links local links
+function gotoPage (filePath, ev) {
+  const dirPath = path.dirname(filePath); 
+  let md = jetpack.read(filePath);
+  md = relToAbsPaths(md, dirPath);
   editor.setMarkdown(md);
   editor.moveCursorToStart();
   editor.focus();
-  // TODO add eventHandlers to links
+  addClickEventListenersToLinks();
+  ev.preventDefault();
   ev.stopPropagation();
   return false;
+} 
+function onClickLabel(ev) {
+  const filePath = ev.target.dataset.path.endsWith(EXT) ? ev.target.dataset.path : ev.target.dataset.path + EXT;;
+  gotoPage(path.join(BASEPATH, filePath), ev);
+}
+
+function onClickInternalLink(ev) {
+  const filePath = decodeURI(ev.target.href.replace("file:///", "/"));
+  gotoPage(filePath, ev);
 }
 
 function relToAbsPaths(mdString, dirPath) {
   const replacement = '(' + dirPath + '/';
-  console.log(mdString.search(/\]\(\.\//gm));
   const newString = mdString.replace(/\(\.\//gm, replacement);
-  console.log(replacement);
   return newString;
+}
+
+function addClickEventListenersToLinks() {
+  const links = document.querySelectorAll(".tui-editor-contents a");
+  for (const link of links) {
+    link.addEventListener("click", ev => {
+      if (ev.target.href.endsWith(".markdown")) {
+        console.log("Internal link clicked: ", ev.target.href)
+        onClickInternalLink(ev);
+      } else {
+        console.log("External Link clicked", ev.target.href);
+        shell.openItem(ev.target.href);
+      }
+    });
+  }
 }
