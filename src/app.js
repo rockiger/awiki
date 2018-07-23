@@ -15,8 +15,8 @@ import jetpack from "fs-jetpack";
 import path from "path";
 const shell = require('electron').shell;
 
-
 import Editor from "tui-editor";
+import {createAtom} from "js-atom";
 
 const BASEPATH = "/home/macco/mega/md/";
 const EXT = ".markdown";
@@ -39,10 +39,38 @@ var editor = new Editor({
   initialEditType: 'wysiwyg',
   previewStyle: 'vertical',
   height: '100%',
-  language: 'de_DE'
+  language: 'de_DE',
+  events: {
+    change: onChangeEditor,
+    //stateChange: () => console.log("stateChange")
+  }
+});
+window.editor = editor;
+
+
+/*********
+ * State *
+ *********/
+
+const $state$ = createAtom({
+  currentFile: "",
+  isEditorChanged: false
 });
 
-window.editor = editor;
+/**
+ * Consumes an delta object and mutates the state accordingly,
+ * can be used to mutate available state attributes or create new ones.
+ * ex. swapState({isEditorChanged: true})
+ * @param {object} delta - the change of the $state$
+ */
+function swapState(delta) {
+  $state$.swap(oldState => {
+    return {
+      ...oldState,
+      ...delta
+    };
+  })
+}
 
 /*************
  * Functions *
@@ -106,6 +134,8 @@ function accordion(el, expanded="expanded") {
 }
 
 function gotoPage (filePath, ev) {
+  writeFile();
+  swapState({currentFile: filePath});
   const dirPath = path.dirname(filePath); 
   let md = jetpack.read(filePath);
   md = relToAbsPaths(md, dirPath);
@@ -127,6 +157,14 @@ function onClickInternalLink(ev) {
   gotoPage(filePath, ev);
 }
 
+function onChangeEditor() {
+  const isEditorChanged = $state$.deref().isEditorChanged;
+  if (!isEditorChanged) {
+    console.log("Editor changed");
+    swapState({isEditorChanged: true});
+  }
+}
+
 function relToAbsPaths(mdString, dirPath) {
   const replacement = '(' + dirPath + '/';
   const newString = mdString.replace(/\(\.\//gm, replacement);
@@ -145,5 +183,15 @@ function addClickEventListenersToLinks() {
         shell.openItem(ev.target.href);
       }
     });
+  }
+}
+
+function writeFile() {
+  const filePath = $state$.deref().currentFile;
+  const markdown = editor.getMarkdown();
+  if(filePath.length > 0) {
+    console.log(markdown);
+    console.log(filePath);
+    jetpack.write(filePath, markdown);
   }
 }
