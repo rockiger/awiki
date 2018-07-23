@@ -51,3 +51,23 @@ body {
   flex: 1;
   overflow: hidden
 }
+
+.tui-editor-contents, x-label {
+  font-size: 14px;
+}
+
+.tui-editor-contents a, #sidebar x-label {
+  cursor: pointer;
+}
+
+.tui-editor-defaultUI {
+  font-family: "Merriweather", "Noto Serif", "Liberation Serif", Georgia, "Times New Roman", serif;
+  font-weight: lighter;
+}
+
+#sidebar x-label:hover, #sidebar x-accordion > header:hover {
+  background-color: rgba(0,0,0, 0.2);
+}
+#sidebar x-accordion > header > x-label:hover {
+  background-color: unset;
+}

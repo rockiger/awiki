@@ -8,4 +8,5 @@ import {setupView} from "./view.js";
 /*********
  * Setup *
  *********/
+
 setupView();
