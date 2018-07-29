@@ -40,6 +40,9 @@ body {
       main > x-label {
         padding: 7px 0 7px 0;
       }
+  #sidebar nav x-label {
+    font-size: 14px;
+  }
 #main {
   display: block;
   background: #fdfdfd;
@@ -52,8 +55,8 @@ body {
   overflow: hidden
 }
 
-.tui-editor-contents, x-label {
-  font-size: 14px;
+.tui-editor-contents {
+  font-size: 18px;
 }
 
 .tui-editor-contents a, #sidebar x-label {
