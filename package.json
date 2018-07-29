@@ -31,6 +31,7 @@
     "release": "npm test && webpack --config=build/webpack.app.config.js --env=production && electron-builder"
   },
   "dependencies": {
+    "find-in-files": "^0.5.0",
     "fs-jetpack": "^1.0.0",
     "js-atom": "^0.4.0",
     "tui-editor": "^1.2.3",
