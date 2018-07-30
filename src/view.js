@@ -1,7 +1,21 @@
 import jetpack from "fs-jetpack";
+import {find} from "find-in-files";
+import {createAtom} from "js-atom";
 
 import {onClickLabel} from "./controller"
 import {BASEPATH, EXT} from "./constants";
+
+/*************
+ * Constants *
+ *************/
+
+
+
+/*********
+ * State *
+ *********/
+
+const $fileList$ = createAtom([], {validator: Array.isArray});
 
 /*************
  * Functions *
@@ -19,9 +33,24 @@ function setupView() {
 
     document.querySelector("#app").style.display = "flex";
 
+    
     for (const label of labels) {
-        label.addEventListener('click', onClickLabel)
+      label.addEventListener('click', onClickLabel)
     }
+    
+    $fileList$.addWatch("$fileList$ changed", (ky, ref, old, nw) => {
+      const filelist = document.querySelector("#filelist");
+      for (const path of nw) {
+        if (path.endsWith(EXT)) {
+          const li = document.createElement("li");
+          const relPath = path.slice(BASEPATH.length, - EXT.length);
+          const lineText = relPath.split("/").join(" > ");
+          li.appendChild(document.createTextNode(lineText));
+          filelist.appendChild(li);
+        }
+      }
+    })
+    populateFileList();
 }
 
 function createSidebar(tree) {
@@ -42,12 +71,20 @@ function createSidebar(tree) {
       return createSidebar(rest);
     }
   }
+
+function populateFileList() {
+  const result = find("", BASEPATH)
+  .then(function(results) {
+    let fileList = [];
+    for (var result in results) {
+      fileList.push(result);
+    }
+    $fileList$.reset(fileList)
+  });
+}
   
   function hasFile(name, list) {
-    console.log(name);
-    console.log(list)
     for (const e of list) {
-      console.log(e.name);
       if (name + EXT === e.name) {
         return true;
       }
