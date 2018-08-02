@@ -1,21 +1,14 @@
 import jetpack from "fs-jetpack";
-import {find} from "find-in-files";
 import {createAtom} from "js-atom";
 
-import {onClickLabel} from "./controller"
-import {BASEPATH, EXT} from "./constants";
+import {onClickLabel, onChangeSearch} from "./controller"
+import {populateFileList, fileList} from "./model";
 
 /*************
  * Constants *
  *************/
 
-
-
-/*********
- * State *
- *********/
-
-const $fileList$ = createAtom([], {validator: Array.isArray});
+import {BASEPATH, EXT} from "./constants";
 
 /*************
  * Functions *
@@ -30,16 +23,23 @@ function setupView() {
     const nav = document.querySelector("#nav");
     nav.innerHTML = sidebar;
     let labels = document.querySelectorAll("#nav x-label");
+    const searchinput = document.querySelector("#searchinput");
 
     document.querySelector("#app").style.display = "flex";
-
     
     for (const label of labels) {
-      label.addEventListener('click', onClickLabel)
+      label.addEventListener('click', onClickLabel);
     }
     
-    $fileList$.addWatch("$fileList$ changed", (ky, ref, old, nw) => {
+    searchinput.addEventListener('input', onChangeSearch);
+
+    fileList().addWatch("$fileList$ changed", (ky, ref, old, nw) => {
       const filelist = document.querySelector("#filelist");
+      // delete children
+      while (filelist.firstChild) {
+        filelist.removeChild(filelist.firstChild);
+      }
+      // populate the list
       for (const path of nw) {
         if (path.endsWith(EXT)) {
           const li = document.createElement("li");
@@ -54,33 +54,22 @@ function setupView() {
 }
 
 function createSidebar(tree) {
-    if (tree.length === 0) {
-      return "";
-    }
-  
-    const first = tree[0]; 
-    const rest = tree.slice(1);
-    const isTxt = first.name.endsWith(EXT);
-    const isDir = (first.type === "dir") ? true : false;
-    const name = isDir ? first.name : first.name.slice(0,-EXT.length);
-    if ( isDir && hasFile(name, rest) && hasChild(first)) {
-      return accordion(first) + createSidebar(rest.slice(1)); //
-    } else if (isTxt) {
-      return label(name, first) + createSidebar(rest);
-    } else {
-      return createSidebar(rest);
-    }
+  if (tree.length === 0) {
+    return "";
   }
 
-function populateFileList() {
-  const result = find("", BASEPATH)
-  .then(function(results) {
-    let fileList = [];
-    for (var result in results) {
-      fileList.push(result);
-    }
-    $fileList$.reset(fileList)
-  });
+  const first = tree[0]; 
+  const rest = tree.slice(1);
+  const isTxt = first.name.endsWith(EXT);
+  const isDir = (first.type === "dir") ? true : false;
+  const name = isDir ? first.name : first.name.slice(0,-EXT.length);
+  if ( isDir && hasFile(name, rest) && hasChild(first)) {
+    return accordion(first) + createSidebar(rest.slice(1)); //
+  } else if (isTxt) {
+    return label(name, first) + createSidebar(rest);
+  } else {
+    return createSidebar(rest);
+  }
 }
   
   function hasFile(name, list) {

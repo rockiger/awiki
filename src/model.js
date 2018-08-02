@@ -1,11 +1,21 @@
 import Editor from "tui-editor";
 import {createAtom} from "js-atom";
 import jetpack from "fs-jetpack";
+import {find} from "find-in-files";
 
-export {EDITOR, swapState, writeFile};
-/*******************
- * Data Definition *
- *******************/
+import {BASEPATH, EXT} from "./constants";
+
+/*************
+ * Constants *
+ *************/
+
+export {EDITOR, swapState, writeFile, populateFileList, fileList};
+
+/***************************
+ * State & Data Definition *
+ ***************************/
+
+const $fileList$ = createAtom([], {validator: Array.isArray});
 
 const $state$ = createAtom({
     currentFile: "",
@@ -46,11 +56,26 @@ function swapState(delta) {
 
 
 function writeFile() {
-    const filePath = $state$.deref().currentFile;
-    const markdown = EDITOR.getMarkdown();
-    if(filePath.length > 0) {
-      console.log(markdown);
-      console.log(filePath);
-      jetpack.write(filePath, markdown);
-    }
+  const filePath = $state$.deref().currentFile;
+  const markdown = EDITOR.getMarkdown();
+  if(filePath.length > 0) {
+    console.log(markdown);
+    console.log(filePath);
+    jetpack.write(filePath, markdown);
   }
+}
+
+function populateFileList(searchString="") {
+  const result = find(searchString, BASEPATH, "." + EXT)
+  .then(function(results) {
+    let fileList = [];
+    for (var result in results) {
+      fileList.push(result);
+    }
+    $fileList$.reset(fileList)
+  });
+}
+
+function fileList() {
+  return $fileList$;
+}

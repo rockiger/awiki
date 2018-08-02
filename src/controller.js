@@ -4,10 +4,10 @@ const shell = electron.shell;
 
 import jetpack from "fs-jetpack";
 
-import {swapState, writeFile} from "./model";
+import {swapState, writeFile, populateFileList} from "./model";
 import {relToAbsPaths} from "./helpers"
 
-export {onClickLabel, onClickInternalLink, onChangeEditor};
+export {onClickLabel, onClickInternalLink, onChangeEditor, onChangeSearch};
 
 /*************
  * Constants *
@@ -36,6 +36,10 @@ function onChangeEditor() {
     console.log("Editor changed");
     swapState({isEditorChanged: true});
   }
+}
+
+function onChangeSearch(ev) {
+  populateFileList(ev.target.value);
 }
 
 /* Helper functions */
