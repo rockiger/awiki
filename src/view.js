@@ -1,8 +1,7 @@
-import jetpack from "fs-jetpack";
-import {createAtom} from "js-atom";
+import jetpack from "fs-jetpack"; 
 
-import {onClickLabel, onChangeSearch} from "./controller"
-import {populateFileList, fileList} from "./model";
+import {onClickLabel, onInputSearch, onFileListChanged, onStateChanged, onKeydownSearch, toggleSearch} from "./controller"
+import {populateFileList, addWatchToState, addWatchToFileList} from "./model";
 
 /*************
  * Constants *
@@ -31,26 +30,22 @@ function setupView() {
       label.addEventListener('click', onClickLabel);
     }
     
-    searchinput.addEventListener('input', onChangeSearch);
+    searchinput.addEventListener('input', onInputSearch);
+    searchinput.addEventListener('keydown', onKeydownSearch);
+    searchinput.focus();
 
-    fileList().addWatch("$fileList$ changed", (ky, ref, old, nw) => {
-      const filelist = document.querySelector("#filelist");
-      // delete children
-      while (filelist.firstChild) {
-        filelist.removeChild(filelist.firstChild);
-      }
-      // populate the list
-      for (const path of nw) {
-        if (path.endsWith(EXT)) {
-          const li = document.createElement("li");
-          const relPath = path.slice(BASEPATH.length, - EXT.length);
-          const lineText = relPath.split("/").join(" > ");
-          li.appendChild(document.createTextNode(lineText));
-          filelist.appendChild(li);
-        }
-      }
-    })
+    addWatchToState("$state$ changed", onStateChanged);
+    addWatchToFileList("$fileList$ changed", onFileListChanged);
+
     populateFileList();
+
+    document.addEventListener('keyup', ev => {
+      const ky = ev.key;
+      if (ev.ctrlKey && ev.shiftKey && ev.key === "F") {
+        toggleSearch();
+      }
+    });
+    // TODO Get prober menu wroking
 }
 
 function createSidebar(tree) {

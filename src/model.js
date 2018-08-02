@@ -9,18 +9,19 @@ import {BASEPATH, EXT} from "./constants";
  * Constants *
  *************/
 
-export {EDITOR, swapState, writeFile, populateFileList, fileList};
+export {EDITOR, swapState, writeFile, populateFileList, fileList, setLineNumber, state, addWatchToFileList, addWatchToState};
 
 /***************************
  * State & Data Definition *
  ***************************/
 
-const $fileList$ = createAtom([], {validator: Array.isArray});
+const $fileList$ = createAtom(Object.freeze([]), {validator: Array.isArray});
 
-const $state$ = createAtom({
+const $state$ = createAtom(Object.freeze({
     currentFile: "",
+    selectedLine: -1  ,
     isEditorChanged: false
-  });
+  }));
   
 const EDITOR = new Editor({
   el: document.querySelector('#editor'),
@@ -47,10 +48,10 @@ window.editor = EDITOR;
  */
 function swapState(delta) {
   $state$.swap(oldState => {
-    return {
+    return Object.freeze({
       ...oldState,
       ...delta
-    };
+    });
   })
 }
 
@@ -66,16 +67,33 @@ function writeFile() {
 }
 
 function populateFileList(searchString="") {
-  const result = find(searchString, BASEPATH, "." + EXT)
+  find(searchString, BASEPATH, "." + EXT)
   .then(function(results) {
     let fileList = [];
     for (var result in results) {
       fileList.push(result);
     }
-    $fileList$.reset(fileList)
+    $fileList$.reset(Object.freeze(fileList));
   });
 }
 
 function fileList() {
-  return $fileList$;
+  return $fileList$.deref();
+}
+
+function state() {
+  return $state$.deref();
+}
+
+function addWatchToState(key, fn) {
+  $state$.addWatch(key, fn);
+}
+
+function addWatchToFileList(key, fn) {
+  $fileList$.addWatch(key, fn);
+}
+
+
+function setLineNumber(n) {
+  swapState({selectedLine: n});
 }

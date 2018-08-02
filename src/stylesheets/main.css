@@ -59,7 +59,7 @@ body {
   font-size: 18px;
 }
 
-.tui-editor-contents a, #sidebar x-label {
+.tui-editor-contents a, #sidebar x-label, #filelist li {
   cursor: pointer;
 }
 
@@ -68,8 +68,14 @@ body {
   font-weight: lighter;
 }
 
-#sidebar x-label:hover, #sidebar x-accordion > header:hover {
-  background-color: rgba(0,0,0, 0.2);
+#sidebar x-label:hover, #sidebar x-accordion > header:hover, #filelist li:hover {
+  background-color: rgba(19, 131, 251, 0.2);
+}
+#sidebar x-label.selected, #filelist li.selected {
+  background-color: rgb(19, 131, 251);
+  border-top-color: rgb(19, 131, 251);
+  border-bottom-color: rgb(19, 131, 251);
+  color: white;
 }
 #sidebar x-accordion > header > x-label:hover {
   background-color: unset;
