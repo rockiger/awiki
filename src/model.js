@@ -67,7 +67,7 @@ function writeFile() {
 }
 
 function populateFileList(searchString="") {
-  find(searchString, BASEPATH, "." + EXT)
+  find({term: searchString, flags: 'ig'}, BASEPATH, "." + EXT)
   .then(function(results) {
     let fileList = [];
     for (var result in results) {
