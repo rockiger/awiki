@@ -5,7 +5,7 @@ const shell = electron.shell;
 import jetpack from "fs-jetpack";
 
 import {swapState, writeFile, populateFileList, setLineNumber, state, fileList, EDITOR} from "./model";
-import {relToAbsPaths} from "./helpers"
+import {relToAbsPaths, fileToAbsPaths} from "./helpers"
 
 export {onClickLabel, onClickInternalLink, onChangeEditor, onInputSearch, onFileListChanged, onStateChanged, onKeydownSearch, toggleSearch};
 
@@ -123,6 +123,7 @@ function gotoPage (filePath, ev) {
     const dirPath = path.dirname(filePath); 
     let md = jetpack.read(filePath);
     md = relToAbsPaths(md, dirPath);
+    md = fileToAbsPaths(md);
     editor.setMarkdown(md);
     editor.moveCursorToStart();
     editor.focus();
