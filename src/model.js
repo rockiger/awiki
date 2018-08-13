@@ -2,6 +2,7 @@ import Editor from "tui-editor";
 import {createAtom} from "js-atom";
 import jetpack from "fs-jetpack";
 import {find} from "find-in-files";
+import Store from "electron-store";
 
 import {BASEPATH, EXT} from "./constants";
 
@@ -9,7 +10,7 @@ import {BASEPATH, EXT} from "./constants";
  * Constants *
  *************/
 
-export {EDITOR, swapState, writeFile, populateFileList, fileList, setLineNumber, state, addWatchToFileList, addWatchToState};
+export {EDITOR, swapState, writeFile, populateFileList, fileList, setLineNumber, state, addWatchToFileList, addWatchToState, saveSettings, currentFile};
 
 /***************************
  * State & Data Definition *
@@ -17,12 +18,17 @@ export {EDITOR, swapState, writeFile, populateFileList, fileList, setLineNumber,
 
 const $fileList$ = createAtom(Object.freeze([]), {validator: Array.isArray});
 
+
+const store = new Store();
+//store.set('currentFile', "currentFile");
 const $state$ = createAtom(Object.freeze({
-    currentFile: "",
+    currentFile: 
+      store.get('currentFile') ? store.get('currentFile') : "",
     selectedLine: -1  ,
     isEditorChanged: false
   }));
-  
+console.log($state$.deref())
+
 const EDITOR = new Editor({
   el: document.querySelector('#editor'),
   initialEditType: 'wysiwyg',
@@ -57,8 +63,9 @@ function swapState(delta) {
 
 
 function writeFile() {
-  const filePath = $state$.deref().currentFile;
+  const filePath = currentFile();
   const markdown = EDITOR.getMarkdown();
+  // TODO save position in file
   if(filePath.length > 0) {
     console.log(markdown);
     console.log(filePath);
@@ -85,6 +92,10 @@ function state() {
   return $state$.deref();
 }
 
+function currentFile() {
+  return $state$.deref().currentFile;
+}
+
 function addWatchToState(key, fn) {
   $state$.addWatch(key, fn);
 }
@@ -93,7 +104,10 @@ function addWatchToFileList(key, fn) {
   $fileList$.addWatch(key, fn);
 }
 
-
 function setLineNumber(n) {
   swapState({selectedLine: n});
+}
+
+function saveSettings() {
+  store.set('currentFile', currentFile());
 }

@@ -4,10 +4,10 @@ const shell = electron.shell;
 
 import jetpack from "fs-jetpack";
 
-import {swapState, writeFile, populateFileList, setLineNumber, state, fileList, EDITOR} from "./model";
+import {swapState, writeFile, populateFileList, setLineNumber, state, fileList, EDITOR, saveSettings} from "./model";
 import {relToAbsPaths, fileToAbsPaths} from "./helpers"
 
-export {onClickLabel, onClickInternalLink, onChangeEditor, onInputSearch, onFileListChanged, onStateChanged, onKeydownSearch, toggleSearch};
+export {onClickLabel, onClickInternalLink, onChangeEditor, onInputSearch, onFileListChanged, onStateChanged, onKeydownSearch, toggleSearch, gotoPage, loadPage};
 
 /*************
  * Constants *
@@ -112,24 +112,35 @@ function onStateChanged(ky, ref, old, nw) {
     filelist.children[nw.selectedLine].classList.add("selected");
     console.log(nw.selectedLine);
   }
+  if (old.currentFile !== nw.currentFile) {
+    saveSettings();
+  }
   console.log("onStateChanged");
 }
 
 /* Helper functions */
 
-function gotoPage (filePath, ev) {
-    writeFile();
+function loadPage(filePath) {
     swapState({currentFile: filePath});
     const dirPath = path.dirname(filePath); 
     let md = jetpack.read(filePath);
     md = relToAbsPaths(md, dirPath);
     md = fileToAbsPaths(md);
     editor.setMarkdown(md);
-    editor.moveCursorToStart();
+    editor.moveCursorToStart(); // TODO Load positon in file
     editor.focus();
     addClickEventListenersToLinks();
-    ev.preventDefault();
-    ev.stopPropagation();
+    // TODO mark page in sidebar and open accordions accordingly
+}
+
+function gotoPage (filePath, ev = null) {
+    writeFile();
+    loadPage(filePath)
+    addClickEventListenersToLinks();
+    if (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
     return false;
 }
 

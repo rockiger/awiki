@@ -1,13 +1,14 @@
 import jetpack from "fs-jetpack"; 
 
-import {onClickLabel, onInputSearch, onFileListChanged, onStateChanged, onKeydownSearch, toggleSearch} from "./controller"
-import {populateFileList, addWatchToState, addWatchToFileList} from "./model";
+import {onClickLabel, onInputSearch, onFileListChanged, onStateChanged, onKeydownSearch, toggleSearch, loadPage} from "./controller"
+import {populateFileList, addWatchToState, addWatchToFileList, saveSettings, currentFile} from "./model";
 
 /*************
  * Constants *
  *************/
 
 import {BASEPATH, EXT} from "./constants";
+import { writeFile } from "./model";
 
 /*************
  * Functions *
@@ -17,7 +18,7 @@ import {BASEPATH, EXT} from "./constants";
 function setupView() {
 
     let tree = jetpack.inspectTree(BASEPATH, {relativePath: true}).children;
-    let sidebar = createSidebar(tree);
+    let sidebar = createSidebar(tree, "expanded");
 
     const nav = document.querySelector("#nav");
     nav.innerHTML = sidebar;
@@ -25,6 +26,8 @@ function setupView() {
     const searchinput = document.querySelector("#searchinput");
 
     document.querySelector("#app").style.display = "flex";
+
+    loadPage(currentFile());
     
     for (const label of labels) {
       label.addEventListener('click', onClickLabel);
@@ -46,20 +49,24 @@ function setupView() {
       }
     });
     // TODO Get prober menu wroking
+    window.addEventListener('beforeunload', ev => saveSettings());
+    window.addEventListener('beforeunload', ev => writeFile());
+    window.addEventListener('blur', ev => writeFile());
 }
 
-function createSidebar(tree) {
+function createSidebar(tree, expanded="") {
   if (tree.length === 0) {
     return "";
   }
 
+  // TODO Open only the first level
   const first = tree[0]; 
   const rest = tree.slice(1);
   const isTxt = first.name.endsWith(EXT);
   const isDir = (first.type === "dir") ? true : false;
   const name = isDir ? first.name : first.name.slice(0,-EXT.length);
   if ( isDir && hasFile(name, rest) && hasChild(first)) {
-    return accordion(first) + createSidebar(rest.slice(1)); //
+    return accordion(first, expanded) + createSidebar(rest.slice(1)); //
   } else if (isTxt) {
     return label(name, first) + createSidebar(rest);
   } else {
@@ -89,7 +96,7 @@ function createSidebar(tree) {
     return `<x-label data-path="${el.relativePath}">${name}</x-label>`;
   }
   
-  function accordion(el, expanded="expanded") {
+  function accordion(el, expanded="") {
     return `<x-accordion ${expanded}>
     <header>
       ${label(el.name, el)}
