@@ -81,18 +81,18 @@ body {
   background-color: unset;
 }
 
-#search {
+.dialog {
   top: 0;
   width: 60%;
   z-index: 100;
 }
 
-#search x-input {
+.dialog x-input {
   max-width: unset;
   height: unset;
 }
 
-#search ol {
+.dialog ol {
   border: 1px solid #bfbfbf;
   background-color: white;
   max-height: 312px;
@@ -101,13 +101,17 @@ body {
   padding: 0;
 }
 
-#search ol li, #search x-input {
+.dialog ol li, .dialog x-input {
     padding: 0.75em 1em;
     line-height: 2em;
     border-bottom: 1px solid #bfbfbf;
     list-style-type: none;
 }
 
-#search ol li:last-of-type {
+.dialog ol li:last-of-type {
   border-bottom: none;
+}
+
+.new-page-dialog__input {
+  margin-bottom: 2em;
 }

@@ -5,12 +5,13 @@ import {find} from "find-in-files";
 import Store from "electron-store";
 
 import {BASEPATH, EXT} from "./constants";
+import {updateSidebar} from "./view";
 
 /*************
  * Constants *
  *************/
 
-export {EDITOR, swapState, writeFile, populateFileList, fileList, setLineNumber, state, addWatchToFileList, addWatchToState, saveSettings, currentFile};
+export {EDITOR, swapState, writeFile, populateFileList, fileList, setLineNumber, state, addWatchToFileList, addWatchToState, saveSettings, currentFile, setNewFileDir, newFileDir, createFile};
 
 /***************************
  * State & Data Definition *
@@ -25,9 +26,10 @@ const $state$ = createAtom(Object.freeze({
     currentFile: 
       store.get('currentFile') ? store.get('currentFile') : "",
     selectedLine: -1  ,
-    isEditorChanged: false
+    isEditorChanged: false,
+    newFileDir: "",
   }));
-console.log($state$.deref())
+console.log($state$.deref());
 
 const EDITOR = new Editor({
   el: document.querySelector('#editor'),
@@ -67,10 +69,22 @@ function writeFile() {
   const markdown = EDITOR.getMarkdown();
   // TODO save position in file
   if(filePath.length > 0) {
-    console.log(markdown);
-    console.log(filePath);
+    /* console.log(markdown);
+    console.log(filePath); */
     jetpack.write(filePath, markdown);
   }
+}
+
+function createFile(filename, filepath) {
+  if (!jetpack.exists(filepath) && filename) {
+    const created = new Date()
+    jetpack.file(filepath, {
+      content: `# ${filename}\nCreated ${created.toDateString()}`});
+    // TODO Update Tree
+    updateSidebar();
+    return filepath;
+  }
+  return false
 }
 
 function populateFileList(searchString="") {
@@ -96,6 +110,10 @@ function currentFile() {
   return $state$.deref().currentFile;
 }
 
+function newFileDir() {
+  return $state$.deref().newFileDir;
+}
+
 function addWatchToState(key, fn) {
   $state$.addWatch(key, fn);
 }
@@ -110,4 +128,11 @@ function setLineNumber(n) {
 
 function saveSettings() {
   store.set('currentFile', currentFile());
+}
+
+function setNewFileDir(newPath) {
+  if (newPath.endsWith(EXT)){
+    return swapState({newFileDir: newPath.slice(0, newPath.length - EXT.length)})
+  }
+  return swapState({newFileDir: newPath});
 }

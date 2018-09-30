@@ -20,12 +20,19 @@
       <div id="editor"></div>
     </div>
   </div>
-  <dialog id="search">
+  <dialog class="dialog" id="search">
     <main>
       <x-input id="searchinput" value="test">
       </x-input>
       <ol id="filelist"> 
       </ol>
+    </main>
+  </dialog>
+  <dialog class="dialog new-page-dialog" id="new-page-dialog">
+    <main>
+      <p><b>Enter the name for the new page.</b></p>
+      <x-input id="new-page-input" class="new-page-dialog__input" value="test">
+      </x-input>
     </main>
   </dialog>
   <script src="app.js"></script>

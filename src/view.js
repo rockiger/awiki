@@ -1,7 +1,7 @@
 import jetpack from "fs-jetpack"; 
 
-import {onClickLabel, onInputSearch, onFileListChanged, onStateChanged, onKeydownSearch, toggleSearch, loadPage} from "./controller"
 import {populateFileList, addWatchToState, addWatchToFileList, saveSettings, currentFile} from "./model";
+import {onClickLabel, onInputSearch, onFileListChanged, onStateChanged, onKeydownSearch, toggleSearch, loadPage, onClickNewSubPage, onKeydownNewPage} from "./controller"
 
 /*************
  * Constants *
@@ -16,26 +16,20 @@ import { writeFile } from "./model";
 
 
 function setupView() {
-
-    let tree = jetpack.inspectTree(BASEPATH, {relativePath: true}).children;
-    let sidebar = createSidebar(tree, "expanded");
-
-    const nav = document.querySelector("#nav");
-    nav.innerHTML = sidebar;
-    let labels = document.querySelectorAll("#nav x-label");
+    updateSidebar()
+    
     const searchinput = document.querySelector("#searchinput");
+    const newPageInput = document.querySelector("#new-page-input");
 
     document.querySelector("#app").style.display = "flex";
 
     loadPage(currentFile());
     
-    for (const label of labels) {
-      label.addEventListener('click', onClickLabel);
-    }
-    
     searchinput.addEventListener('input', onInputSearch);
     searchinput.addEventListener('keydown', onKeydownSearch);
     searchinput.focus();
+
+    newPageInput.addEventListener('keydown', onKeydownNewPage);
 
     addWatchToState("$state$ changed", onStateChanged);
     addWatchToFileList("$fileList$ changed", onFileListChanged);
@@ -93,7 +87,15 @@ function createSidebar(tree, expanded="") {
   }
   
   function label(name, el) {
-    return `<x-label data-path="${el.relativePath}">${name}</x-label>`;
+    return `<x-label class="sidebar-label" data-path="${el.relativePath}">${name}
+        <x-contextmenu>
+          <x-menu>
+            <x-menuitem>
+              <x-label class="new-sub-page-item">New Sub Page...</x-label>
+            </x-menuitem>
+          </x-menu>
+      </x-contextmenu>
+    </x-label>`;
   }
   
   function accordion(el, expanded="") {
@@ -108,4 +110,21 @@ function createSidebar(tree, expanded="") {
   </x-accordion>`
   }
 
-export {setupView};
+function updateSidebar() {
+    let tree = jetpack.inspectTree(BASEPATH, {relativePath: true}).children;
+    let sidebar = createSidebar(tree, "expanded");
+
+    const nav = document.querySelector("#nav");
+    nav.innerHTML = sidebar;
+    let labels = document.querySelectorAll(".sidebar-label");
+    const newSubPageItems = document.querySelectorAll(".new-sub-page-item");
+    
+    for (const label of labels) {
+      label.addEventListener('click', onClickLabel);
+    }
+
+    for (const newSubPageItem of newSubPageItems) {
+      newSubPageItem.addEventListener('click', onClickNewSubPage);
+    }
+}
+export {setupView, updateSidebar};

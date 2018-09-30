@@ -4,10 +4,10 @@ const shell = electron.shell;
 
 import jetpack from "fs-jetpack";
 
-import {swapState, writeFile, populateFileList, setLineNumber, state, fileList, EDITOR, saveSettings} from "./model";
+import {swapState, writeFile, populateFileList, setLineNumber, state, fileList, EDITOR, saveSettings, setNewFileDir, newFileDir, createFile} from "./model";
 import {relToAbsPaths, fileToAbsPaths} from "./helpers"
 
-export {onClickLabel, onClickInternalLink, onChangeEditor, onInputSearch, onFileListChanged, onStateChanged, onKeydownSearch, toggleSearch, gotoPage, loadPage};
+export {onClickLabel, onClickInternalLink, onChangeEditor, onInputSearch, onFileListChanged, onStateChanged, onKeydownSearch, toggleSearch, gotoPage, loadPage, onClickNewSubPage, onKeydownNewPage};
 
 /*************
  * Constants *
@@ -24,6 +24,18 @@ import {BASEPATH, EXT} from "./constants";
 function onClickLabel(ev) {
   const filePath = ev.target.dataset.path.endsWith(EXT) ? ev.target.dataset.path : ev.target.dataset.path + EXT;;
   gotoPage(path.join(BASEPATH, filePath), ev);
+}
+
+function onClickNewSubPage(ev) {
+  const menu = ev.path[3];
+  menu.close()
+  const sidebarLabel = ev.path[4];
+  setNewFileDir(sidebarLabel.dataset.path);
+  toggleNewPageDialog();
+  ev.preventDefault();
+  ev.stopPropagation()
+  ev.stopImmediatePropagation();
+  return false;
 }
 
 function onClickInternalLink(ev) {
@@ -71,6 +83,35 @@ function onKeydownSearch(ev) {
     case "Tab":
       toggleSearch();
       
+    default:
+      return true;
+  }
+}
+
+function onKeydownNewPage(ev, pth) {
+  console.log(pth);
+  switch (ev.key) {
+
+    case "Enter":
+      const newPageDialog = document.querySelector("#new-page-dialog");
+      const newPageInput = document.querySelector("#new-page-input");
+      const newPageName = newPageInput.value.trim();
+      const relPath = newFileDir() 
+      // if relPath has extension cut
+      const filepath = path.join(BASEPATH, relPath, newPageName + EXT);
+      console.log(filepath);
+      newPageDialog.close();
+      const createdFilePath = createFile(newPageName, filepath);
+      if (createdFilePath) {
+        gotoPage(filepath);
+      }
+
+      break;
+
+      /* const filePath = fileList()[current];
+      gotoPage(filePath, ev);
+      toggleSearch(); */
+   
     default:
       return true;
   }
@@ -171,5 +212,19 @@ function toggleSearch() {
     search.showModal();
     searchinput.value = "";
     searchinput.focus();
+  }
+}
+
+function toggleNewPageDialog() {
+  const newPageDialog = document.querySelector("#new-page-dialog");
+  if (newPageDialog.open) {
+    newPageDialog.close()
+    .then(() => editor.focus());
+  } else {
+    const newPageInput = document.querySelector("#new-page-input");
+
+    newPageDialog.showModal();
+    newPageInput.value = "";
+    newPageInput.focus();
   }
 }
