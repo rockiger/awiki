@@ -5,19 +5,19 @@ import {find} from "find-in-files";
 import Store from "electron-store";
 
 import {BASEPATH, EXT} from "./constants";
-import {updateSidebar} from "./view";
 
 /*************
  * Constants *
  *************/
 
-export {EDITOR, swapState, writeFile, populateFileList, fileList, setLineNumber, state, addWatchToFileList, addWatchToState, saveSettings, currentFile, setNewFileDir, newFileDir, createFile};
+export {EDITOR, swapState, writeFile, populateFileList, fileList, setLineNumber, state, addWatchToFileList, addWatchToState, saveSettings, currentFile, setNewFileDir, newFileDir, createFile, resetPageTree, addWatchToPageTree, pageTree, populatePageTree};
 
 /***************************
  * State & Data Definition *
  ***************************/
 
 const $fileList$ = createAtom(Object.freeze([]), {validator: Array.isArray});
+const $pageTree$ = createAtom(Object.freeze([]), {validator: Array.isArray});
 
 
 const store = new Store();
@@ -81,7 +81,7 @@ function createFile(filename, filepath) {
     jetpack.file(filepath, {
       content: `# ${filename}\nCreated ${created.toDateString()}`});
     // TODO Update Tree
-    updateSidebar();
+    populatePageTree();
     return filepath;
   }
   return false
@@ -98,8 +98,21 @@ function populateFileList(searchString="") {
   });
 }
 
+function populatePageTree() {
+  jetpack.inspectTreeAsync(BASEPATH, {relativePath: true})
+  .then(results => resetPageTree(results.children));
+}
+
+function resetPageTree(newPageTree) {
+  $pageTree$.reset(newPageTree);
+}
+
 function fileList() {
   return $fileList$.deref();
+}
+
+function pageTree() {
+  return $pageTree$.deref();
 }
 
 function state() {
@@ -120,6 +133,10 @@ function addWatchToState(key, fn) {
 
 function addWatchToFileList(key, fn) {
   $fileList$.addWatch(key, fn);
+}
+
+function addWatchToPageTree(key, fn) {
+  $pageTree$.addWatch(key, fn);
 }
 
 function setLineNumber(n) {

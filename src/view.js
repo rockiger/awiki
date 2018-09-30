@@ -1,7 +1,7 @@
 import jetpack from "fs-jetpack"; 
 
-import {populateFileList, addWatchToState, addWatchToFileList, saveSettings, currentFile} from "./model";
-import {onClickLabel, onInputSearch, onFileListChanged, onStateChanged, onKeydownSearch, toggleSearch, loadPage, onClickNewSubPage, onKeydownNewPage} from "./controller"
+import {populateFileList, addWatchToState, addWatchToFileList, saveSettings, currentFile, addWatchToPageTree, resetPageTree, populatePageTree} from "./model";
+import {onClickLabel, onInputSearch, onFileListChanged, onStateChanged, onKeydownSearch, toggleSearch, loadPage, onClickNewSubPage, onKeydownNewPage, onFileTreeChanged} from "./controller"
 
 /*************
  * Constants *
@@ -16,7 +16,12 @@ import { writeFile } from "./model";
 
 
 function setupView() {
-    updateSidebar()
+
+    addWatchToPageTree("$pageTree$ changed", (ky, ref, old, newTree) => {
+      updateSidebar(newTree);
+    });
+    populatePageTree();
+
     
     const searchinput = document.querySelector("#searchinput");
     const newPageInput = document.querySelector("#new-page-input");
@@ -110,8 +115,7 @@ function createSidebar(tree, expanded="") {
   </x-accordion>`
   }
 
-function updateSidebar() {
-    let tree = jetpack.inspectTree(BASEPATH, {relativePath: true}).children;
+function updateSidebar(tree) {
     let sidebar = createSidebar(tree, "expanded");
 
     const nav = document.querySelector("#nav");

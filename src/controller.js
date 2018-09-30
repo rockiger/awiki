@@ -22,8 +22,13 @@ import {BASEPATH, EXT} from "./constants";
 /* Handlers */
 
 function onClickLabel(ev) {
-  const filePath = ev.target.dataset.path.endsWith(EXT) ? ev.target.dataset.path : ev.target.dataset.path + EXT;;
-  gotoPage(path.join(BASEPATH, filePath), ev);
+  try {
+    const filePath = ev.target.dataset.path.endsWith(EXT) ? ev.target.dataset.path : ev.target.dataset.path + EXT;;
+    gotoPage(path.join(BASEPATH, filePath), ev);
+  } catch (e) {
+    console.log(e);
+    console.log(ev.target.dataset);
+  }
 }
 
 function onClickNewSubPage(ev) {
@@ -88,8 +93,7 @@ function onKeydownSearch(ev) {
   }
 }
 
-function onKeydownNewPage(ev, pth) {
-  console.log(pth);
+function onKeydownNewPage(ev) {
   switch (ev.key) {
 
     case "Enter":
