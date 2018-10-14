@@ -71,7 +71,8 @@ body {
 #sidebar x-label:hover, #sidebar x-accordion > header:hover, #filelist li:hover {
   background-color: rgba(19, 131, 251, 0.2);
 }
-#sidebar x-label.selected, #filelist li.selected {
+#sidebar x-label.selected {font-weight: bold;}
+#filelist li.selected {
   background-color: rgb(19, 131, 251);
   border-top-color: rgb(19, 131, 251);
   border-bottom-color: rgb(19, 131, 251);

@@ -10,7 +10,7 @@ import {BASEPATH, EXT} from "./constants";
  * Constants *
  *************/
 
-export {EDITOR, swapState, writeFile, populateFileList, fileList, setLineNumber, state, addWatchToFileList, addWatchToState, saveSettings, currentFile, setNewFileDir, newFileDir, createFile, resetPageTree, addWatchToPageTree, pageTree, populatePageTree};
+export {EDITOR, swapState, writeFile, populateFileList, fileList, setLineNumber, setSelectedLeaf, state, addWatchToFileList, addWatchToState, addWatchToSelectedLeaf, saveSettings, currentFile, setNewFileDir, newFileDir, createFile, resetPageTree, addWatchToPageTree, pageTree, populatePageTree};
 
 /***************************
  * State & Data Definition *
@@ -18,6 +18,7 @@ export {EDITOR, swapState, writeFile, populateFileList, fileList, setLineNumber,
 
 const $fileList$ = createAtom(Object.freeze([]), {validator: Array.isArray});
 const $pageTree$ = createAtom(Object.freeze([]), {validator: Array.isArray});
+const $selectedLeaf$ = createAtom(null)
 
 
 const store = new Store();
@@ -42,6 +43,11 @@ const EDITOR = new Editor({
     //stateChange: () => console.log("stateChange")
   }
 });
+// TODO switch to prosemirror
+// TODO switch between wysiwyg and markdown
+// TODO add code blocks to wysiwyg
+// TODO Upload images
+// TODO Connect to akiee
 window.editor = EDITOR;
 
 /*************
@@ -80,7 +86,6 @@ function createFile(filename, filepath) {
     const created = new Date()
     jetpack.file(filepath, {
       content: `# ${filename}\nCreated ${created.toDateString()}`});
-    // TODO Update Tree
     populatePageTree();
     return filepath;
   }
@@ -139,8 +144,16 @@ function addWatchToPageTree(key, fn) {
   $pageTree$.addWatch(key, fn);
 }
 
+function addWatchToSelectedLeaf(key, fn) {
+  $selectedLeaf$.addWatch(key, fn);
+}
+
 function setLineNumber(n) {
   swapState({selectedLine: n});
+}
+
+function setSelectedLeaf(domElement) {
+  $selectedLeaf$.reset(domElement);
 }
 
 function saveSettings() {

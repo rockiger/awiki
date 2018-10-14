@@ -4,10 +4,10 @@ const shell = electron.shell;
 
 import jetpack from "fs-jetpack";
 
-import {swapState, writeFile, populateFileList, setLineNumber, state, fileList, EDITOR, saveSettings, setNewFileDir, newFileDir, createFile} from "./model";
-import {relToAbsPaths, fileToAbsPaths} from "./helpers"
+import {swapState, writeFile, populateFileList, setLineNumber, state, fileList, EDITOR, saveSettings, setNewFileDir, newFileDir, createFile, setSelectedLeaf} from "./model";
+import {relToAbsPaths, fileToAbsPaths, absToRelPath} from "./helpers"
 
-export {onClickLabel, onClickInternalLink, onChangeEditor, onInputSearch, onFileListChanged, onStateChanged, onKeydownSearch, toggleSearch, gotoPage, loadPage, onClickNewSubPage, onKeydownNewPage};
+export {onClickLabel, onClickInternalLink, onChangeEditor, onInputSearch, onFileListChanged, onStateChanged, onKeydownSearch, toggleSearch, gotoPage, loadPage, onClickNewSubPage, onKeydownNewPage, onSelectedLeafChanged, getLeafFromPath};
 
 /*************
  * Constants *
@@ -23,7 +23,7 @@ import {BASEPATH, EXT} from "./constants";
 
 function onClickLabel(ev) {
   try {
-    const filePath = ev.target.dataset.path.endsWith(EXT) ? ev.target.dataset.path : ev.target.dataset.path + EXT;;
+    const filePath = ev.target.dataset.path.endsWith(EXT) ? ev.target.dataset.path : ev.target.dataset.path + EXT;
     gotoPage(path.join(BASEPATH, filePath), ev);
   } catch (e) {
     console.log(e);
@@ -121,7 +121,7 @@ function onKeydownNewPage(ev) {
   }
 }
 
-function onFileListChanged(ky, ref, old, nw) {
+function onFileListChanged(ky, ref, old, nu) {
   const filelist = document.querySelector("#filelist");
 
   // delete children
@@ -130,7 +130,7 @@ function onFileListChanged(ky, ref, old, nw) {
   }
   // populate the list
   let i = 0;
-  for (const path of nw) {
+  for (const path of nu) {
     if (path.endsWith(EXT)) {
       const li = document.createElement("li");
       const relPath = path.slice(BASEPATH.length, - EXT.length);
@@ -148,22 +148,45 @@ function onFileListChanged(ky, ref, old, nw) {
   setLineNumber(0);
 }
 
-function onStateChanged(ky, ref, old, nw) {
-  if (old.selectedLine !== nw.selectedLine) {
+function onStateChanged(ky, ref, old, nu) {
+  if (old.selectedLine !== nu.selectedLine) {
     const filelist = document.querySelector("#filelist");
     if (old.selectedLine > -1) {
       filelist.children[old.selectedLine].classList.remove("selected"); 
     }
-    filelist.children[nw.selectedLine].classList.add("selected");
-    console.log(nw.selectedLine);
+    filelist.children[nu.selectedLine].classList.add("selected");
+    console.log(nu.selectedLine);
   }
-  if (old.currentFile !== nw.currentFile) {
+  if (old.currentFile !== nu.currentFile) {
     saveSettings();
   }
   console.log("onStateChanged");
 }
 
+function onSelectedLeafChanged(ky, ref, old, nu) {
+  if (old) {
+    old.classList.remove('selected');
+  }
+  nu.classList.add('selected');
+  openSidebarBranches(nu.parentElement);
+}
+
 /* Helper functions */
+
+/**
+ * Open all ancestor branches (x-accordion) of the given element in the sidebar
+ * @param leaf - the leaf to start from 
+ */
+function openSidebarBranches(leaf) {
+  if (leaf.id === 'nav' || leaf === null) {
+    return;
+  } else if (leaf.localName === 'x-accordion') {
+    leaf.expanded = 'expanded';
+    openSidebarBranches(leaf.parentElement);
+  } else {
+    openSidebarBranches(leaf.parentElement);
+  }
+}
 
 function loadPage(filePath) {
     swapState({currentFile: filePath});
@@ -175,12 +198,13 @@ function loadPage(filePath) {
     editor.moveCursorToStart(); // TODO Load positon in file
     editor.focus();
     addClickEventListenersToLinks();
-    // TODO mark page in sidebar and open accordions accordingly
 }
 
-function gotoPage (filePath, ev = null) {
+function gotoPage (absFilePath, ev = null) {
     writeFile();
-    loadPage(filePath)
+    loadPage(absFilePath)
+    const leaf = getLeafFromPath(absToRelPath(absFilePath));
+    setSelectedLeaf(leaf);
     addClickEventListenersToLinks();
     if (ev) {
       ev.preventDefault();
@@ -188,6 +212,7 @@ function gotoPage (filePath, ev = null) {
     }
     return false;
 }
+
 
 function addClickEventListenersToLinks() {
     const links = document.querySelectorAll(".tui-editor-contents a");
@@ -230,5 +255,23 @@ function toggleNewPageDialog() {
     newPageDialog.showModal();
     newPageInput.value = "";
     newPageInput.focus();
+  }
+}
+
+/**
+ * Querys a leaf (x-label) from the given file path.
+ * @param filePath - a relative filepathe
+ * @return DOMNode
+ */
+function getLeafFromPath(filePath) {
+  let query =  'x-label[data-path="' + filePath + '"]';
+  let leaf = document.querySelector(query);
+  if (leaf) {
+    return leaf;
+  } else {
+    const pathWithoutExtension = filePath.slice(0, filePath.length - EXT.length);
+    query = `x-label[data-path="${pathWithoutExtension}"]`
+    leaf = document.querySelector(query);
+    return leaf;
   }
 }

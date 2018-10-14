@@ -1,14 +1,15 @@
 import jetpack from "fs-jetpack"; 
 
-import {populateFileList, addWatchToState, addWatchToFileList, saveSettings, currentFile, addWatchToPageTree, resetPageTree, populatePageTree} from "./model";
-import {onClickLabel, onInputSearch, onFileListChanged, onStateChanged, onKeydownSearch, toggleSearch, loadPage, onClickNewSubPage, onKeydownNewPage, onFileTreeChanged} from "./controller"
+import {populateFileList, addWatchToState, addWatchToFileList, saveSettings, currentFile, addWatchToPageTree, resetPageTree, populatePageTree, addWatchToSelectedLeaf, setSelectedLeaf} from "./model";
+import {onClickLabel, onInputSearch, onFileListChanged, onStateChanged, onKeydownSearch, toggleSearch, loadPage, onClickNewSubPage, onKeydownNewPage, onSelectedLeafChanged, getLeafFromPath} from "./controller";
+import { writeFile } from "./model";
+import { absToRelPath } from "./helpers";
 
 /*************
  * Constants *
  *************/
 
 import {BASEPATH, EXT} from "./constants";
-import { writeFile } from "./model";
 
 /*************
  * Functions *
@@ -19,6 +20,9 @@ function setupView() {
 
     addWatchToPageTree("$pageTree$ changed", (ky, ref, old, newTree) => {
       updateSidebar(newTree);
+      const leaf = getLeafFromPath(absToRelPath(currentFile()));
+      setSelectedLeaf(leaf);
+
     });
     populatePageTree();
 
@@ -29,6 +33,8 @@ function setupView() {
     document.querySelector("#app").style.display = "flex";
 
     loadPage(currentFile());
+    addWatchToSelectedLeaf("$selectedLeaf$ changed", onSelectedLeafChanged);
+    
     
     searchinput.addEventListener('input', onInputSearch);
     searchinput.addEventListener('keydown', onKeydownSearch);
@@ -96,6 +102,7 @@ function createSidebar(tree, expanded="") {
         <x-contextmenu>
           <x-menu>
             <x-menuitem>
+              <x-icon name="add"></x-icon>
               <x-label class="new-sub-page-item">New Sub Page...</x-label>
             </x-menuitem>
           </x-menu>
@@ -131,4 +138,5 @@ function updateSidebar(tree) {
       newSubPageItem.addEventListener('click', onClickNewSubPage);
     }
 }
+
 export {setupView, updateSidebar};
