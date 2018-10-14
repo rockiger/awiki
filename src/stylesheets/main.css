@@ -116,3 +116,19 @@ body {
 .new-page-dialog__input {
   margin-bottom: 2em;
 }
+
+.tui-editor .te-preview-style-vertical .te-preview {
+  display: none;
+}
+.tui-editor .te-preview-style-vertical .te-editor {
+  width: 100%;
+}
+
+pre.CodeMirror-line {
+  outline: unset;
+  font-weight: normal;
+}
+
+.tui-editor .te-preview-style-vertical .te-md-splitter {
+    display: none;
+}

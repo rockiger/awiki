@@ -41,12 +41,25 @@ const EDITOR = new Editor({
   events: {
     change: () => console.log("editor change"),
     //stateChange: () => console.log("stateChange")
-  }
+  },
+  hooks: {
+    addImageBlobHook: function (fileBlob, callback) {
+      // Copies the image into the file structure of awiki
+      const currentMarkdownFilePath = currentFile();
+      const cwd = currentMarkdownFilePath.slice(0, currentFile.length - EXT.length);
+      jetpack.dir(cwd)
+      const fileDestination = jetpack.path(cwd, fileBlob.name);
+      jetpack.copy(fileBlob.path, fileDestination);
+      callback(fileDestination, fileBlob.name);
+      return false;
+    },
+  },
 });
+// TODO add automatic insertion of internal links
+// TODO add autocompletion for markdown syntax
 // TODO switch to prosemirror
 // TODO switch between wysiwyg and markdown
 // TODO add code blocks to wysiwyg
-// TODO Upload images
 // TODO Connect to akiee
 window.editor = EDITOR;
 
