@@ -22,13 +22,12 @@ const $selectedLeaf$ = createAtom(null)
 
 
 const store = new Store();
-//store.set('currentFile', "currentFile");
 const $state$ = createAtom(Object.freeze({
     currentFile: 
-      store.get('currentFile') ? store.get('currentFile') : "",
+      (store.get('currentFile') ? store.get('currentFile') : `${BASEPATH}Home${EXT}`),
     selectedLine: -1  ,
     isEditorChanged: false,
-    newFileDir: "",
+    newFileDir: '',
   }));
 console.log($state$.deref());
 
@@ -55,6 +54,11 @@ const EDITOR = new Editor({
     },
   },
 });
+
+// Create frist version
+  // Add icon
+
+
 // TODO add automatic insertion of internal links
 // TODO add autocompletion for markdown syntax
 // TODO switch to prosemirror

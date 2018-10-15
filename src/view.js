@@ -31,7 +31,6 @@ function setupView() {
     const newPageInput = document.querySelector("#new-page-input");
 
     document.querySelector("#app").style.display = "flex";
-
     loadPage(currentFile());
     addWatchToSelectedLeaf("$selectedLeaf$ changed", onSelectedLeafChanged);
     

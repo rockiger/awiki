@@ -25,6 +25,7 @@ function onClickLabel(ev) {
   try {
     const filePath = ev.target.dataset.path.endsWith(EXT) ? ev.target.dataset.path : ev.target.dataset.path + EXT;
     gotoPage(path.join(BASEPATH, filePath), ev);
+    closeSearch()
   } catch (e) {
     console.log(e);
     console.log(ev.target.dataset);
@@ -155,6 +156,7 @@ function onStateChanged(ky, ref, old, nu) {
       filelist.children[old.selectedLine].classList.remove("selected"); 
     }
     filelist.children[nu.selectedLine].classList.add("selected");
+    filelist.children[nu.selectedLine].scrollIntoView(false);
     console.log(nu.selectedLine);
   }
   if (old.currentFile !== nu.currentFile) {
@@ -241,6 +243,14 @@ function toggleSearch() {
     search.showModal();
     searchinput.value = "";
     searchinput.focus();
+  }
+}
+
+function closeSearch() {
+  const search = document.querySelector("#search");
+  if (search.open) {
+    search.close()
+    .then(() => editor.focus());
   }
 }
 
