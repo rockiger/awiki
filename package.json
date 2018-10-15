@@ -1,15 +1,23 @@
 {
-  "name": "electron-boilerplate",
-  "productName": "Electron Boilerplate",
-  "description": "Starter for your Electron application",
-  "version": "0.0.0",
+  "name": "awiki",
+  "productName": "Awiki",
+  "description": "Your personal wiki on your desktop",
+  "version": "0.1.0",
   "private": true,
-  "author": "Mr. Gumby <mr.gumby@example.com>",
-  "copyright": "© 2017, Gumby inc.",
-  "homepage": "http://example.com",
+  "author": "Marco Laspe <marco@rockiger.com>",
+  "copyright": "© 2018, Rockiger",
+  "homepage": "http://rockiger.com",
   "main": "app/background.js",
   "build": {
-    "appId": "com.example.electron-boilerplate",
+    "linux": {
+      "target": [
+        {
+          "target": "deb"
+        }
+      ],
+      "category": "Office"
+    },
+    "appId": "com.rockiger.awiki",
     "files": [
       "app/**/*",
       "node_modules/**/*",
@@ -45,7 +53,7 @@
     "babel-plugin-transform-object-rest-spread": "^7.0.0-beta.3",
     "chai": "^4.2.0",
     "css-loader": "^0.28.7",
-    "electron": "^2.0.10",
+    "electron": "^2.0.11",
     "electron-builder": "^20.28.4",
     "electron-mocha": "^6.0.4",
     "friendly-errors-webpack-plugin": "^1.6.1",
